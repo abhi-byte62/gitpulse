@@ -41,6 +41,7 @@ export function getGradeBadgeStyles(grade: 'A+' | 'A' | 'B' | 'C' | 'D'): {
   bg: string;
   text: string;
   border: string;
+  dot: string;
   label: string;
 } {
   switch (grade) {
@@ -48,28 +49,32 @@ export function getGradeBadgeStyles(grade: 'A+' | 'A' | 'B' | 'C' | 'D'): {
       return {
         bg: 'bg-emerald-500/10',
         text: 'text-emerald-400',
-        border: 'border-emerald-500/30',
+        border: 'border-emerald-500/20',
+        dot: 'bg-emerald-400',
         label: 'Exceptional'
       };
     case 'A':
       return {
-        bg: 'bg-blue-500/10',
-        text: 'text-blue-400',
-        border: 'border-blue-500/30',
+        bg: 'bg-sky-500/10',
+        text: 'text-sky-400',
+        border: 'border-sky-500/20',
+        dot: 'bg-sky-400',
         label: 'Strong'
       };
     case 'B':
       return {
         bg: 'bg-amber-500/10',
         text: 'text-amber-400',
-        border: 'border-amber-500/30',
+        border: 'border-amber-500/20',
+        dot: 'bg-amber-400',
         label: 'Healthy'
       };
     case 'C':
       return {
         bg: 'bg-orange-500/10',
         text: 'text-orange-400',
-        border: 'border-orange-500/30',
+        border: 'border-orange-500/20',
+        dot: 'bg-orange-400',
         label: 'Moderate'
       };
     case 'D':
@@ -77,8 +82,9 @@ export function getGradeBadgeStyles(grade: 'A+' | 'A' | 'B' | 'C' | 'D'): {
       return {
         bg: 'bg-rose-500/10',
         text: 'text-rose-400',
-        border: 'border-rose-500/30',
-        label: 'Needs Maintenance'
+        border: 'border-rose-500/20',
+        dot: 'bg-rose-400',
+        label: 'Needs Review'
       };
   }
 }

@@ -21,7 +21,8 @@ describe('HealthScoreCard component', () => {
 
     expect(screen.getByText('88')).toBeInTheDocument();
     expect(screen.getByText(/Grade A/i)).toBeInTheDocument();
-    expect(screen.getByText('Activity & Freshness')).toBeInTheDocument();
+    expect(screen.getByText('Activity')).toBeInTheDocument();
+    expect(screen.getByText('Documentation')).toBeInTheDocument();
     expect(screen.getByText('High freshness')).toBeInTheDocument();
     expect(screen.getByText('Expand repository description')).toBeInTheDocument();
   });

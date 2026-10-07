@@ -12,46 +12,46 @@ interface StatsGridProps {
 export const StatsGrid: React.FC<StatsGridProps> = ({ stats, insights, followers }) => {
   const cards = [
     {
-      label: 'Total Stars',
-      value: formatNumber(stats.stars),
-      subtext: `Across ${stats.repositories} repositories`,
-      icon: Star,
-      color: 'text-amber-400'
-    },
-    {
-      label: 'Total Forks',
-      value: formatNumber(stats.forks),
-      subtext: 'Downstream adoption',
-      icon: GitFork,
-      color: 'text-blue-400'
-    },
-    {
-      label: 'Public Repos',
+      label: 'Public Repositories',
       value: formatNumber(stats.totalPublicRepositories),
       subtext: `${stats.repositories} analyzed`,
       icon: BookOpen,
-      color: 'text-purple-400'
+      iconColor: 'text-purple-400'
+    },
+    {
+      label: 'Total Stars',
+      value: formatNumber(stats.stars),
+      subtext: `Across ${stats.repositories} repos`,
+      icon: Star,
+      iconColor: 'text-amber-400'
+    },
+    {
+      label: 'Downstream Forks',
+      value: formatNumber(stats.forks),
+      subtext: 'Ecosystem forks',
+      icon: GitFork,
+      iconColor: 'text-sky-400'
     },
     {
       label: 'Followers',
       value: formatNumber(followers),
       subtext: 'GitHub community',
       icon: Users,
-      color: 'text-emerald-400'
+      iconColor: 'text-emerald-400'
     },
     {
       label: 'Avg Stars / Repo',
       value: insights.averageStarsPerRepo.toString(),
       subtext: 'Popularity density',
       icon: Activity,
-      color: 'text-rose-400'
+      iconColor: 'text-rose-400'
     },
     {
-      label: 'Maintenance Rate',
+      label: 'Freshness Rate',
       value: `${insights.maintenanceRate}%`,
-      subtext: 'Updated in last 6 mos',
+      subtext: 'Pushed in 6 mos',
       icon: Percent,
-      color: insights.maintenanceRate >= 60 ? 'text-emerald-400' : 'text-amber-400'
+      iconColor: insights.maintenanceRate >= 60 ? 'text-brand' : 'text-amber-400'
     }
   ];
 
@@ -62,17 +62,17 @@ export const StatsGrid: React.FC<StatsGridProps> = ({ stats, insights, followers
         return (
           <div
             key={idx}
-            className="rounded-xl border border-border bg-surface p-4 flex flex-col justify-between hover:border-border-active transition-colors"
+            className="rounded-2xl border border-border bg-surface p-4 flex flex-col justify-between hover:border-brand/40 hover:bg-surface-subtle transition-all"
           >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-text-secondary">{card.label}</span>
-              <Icon className={`h-4 w-4 ${card.color}`} />
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-mono font-medium text-text-muted">{card.label}</span>
+              <Icon className={`h-4 w-4 ${card.iconColor}`} />
             </div>
             <div>
-              <div className="text-2xl font-bold font-mono text-text-primary tracking-tight">
+              <div className="text-2xl font-extrabold font-mono text-text-primary tracking-tight">
                 {card.value}
               </div>
-              <div className="text-[11px] text-text-muted mt-0.5 truncate">
+              <div className="text-[11px] font-mono text-text-muted mt-1 truncate">
                 {card.subtext}
               </div>
             </div>

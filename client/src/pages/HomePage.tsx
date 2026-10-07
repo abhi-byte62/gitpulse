@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ArrowRight, ShieldCheck, Activity, Code2, Zap } from 'lucide-react';
+import { Search, ArrowRight, ShieldCheck, Code2, Zap, Terminal, ArrowUpRight } from 'lucide-react';
 import { api } from '../services/api';
 
 export const HomePage: React.FC = () => {
@@ -11,7 +11,6 @@ export const HomePage: React.FC = () => {
   useEffect(() => {
     api.getRateLimit().catch(() => {});
 
-    // Keyboard shortcut: pressing '/' focuses the search input
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === '/' && document.activeElement !== inputRef.current) {
         e.preventDefault();
@@ -30,101 +29,188 @@ export const HomePage: React.FC = () => {
     }
   };
 
-  const sampleUsers = ['abhi-byte62', 'torvalds', 'shadcn', 'antfu'];
+  const sampleUsers = [
+    { username: 'abhi-byte62', role: 'Full-Stack Engineer', tag: 'Featured' },
+    { username: 'torvalds', role: 'Linux Creator', tag: 'Kernel' },
+    { username: 'shadcn', role: 'UI Architect', tag: 'Components' },
+    { username: 'antfu', role: 'Core Contributor', tag: 'Ecosystem' }
+  ];
 
   return (
-    <div className="relative isolate min-h-[calc(100vh-14rem)] flex flex-col justify-between">
-      {/* Background subtle grid */}
-      <div className="absolute inset-0 bg-grid-pattern opacity-30 pointer-events-none -z-10" />
+    <div className="relative min-h-[calc(100vh-14rem)] flex flex-col justify-between overflow-hidden">
+      {/* Background Subtle Gradient & Grid */}
+      <div className="absolute inset-0 bg-grid-ramp opacity-40 pointer-events-none" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-radial-fade pointer-events-none" />
 
-      <main className="mx-auto max-w-5xl px-4 pt-16 pb-12 sm:px-6 lg:px-8 text-center">
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs font-mono text-text-secondary mb-8 shadow-sm">
-          <Activity className="h-3.5 w-3.5 text-accent" />
-          <span>Real-time GitHub REST API Intelligence</span>
-          <span className="text-text-muted">•</span>
-          <span className="text-emerald-400">Public data</span>
+      <main className="relative mx-auto max-w-6xl px-4 pt-16 pb-20 sm:px-6 lg:px-8">
+        {/* Top pill badge */}
+        <div className="flex justify-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-subtle px-3.5 py-1 text-xs font-mono text-text-secondary shadow-sm hover:border-brand/40 transition-colors">
+            <span className="flex h-1.5 w-1.5 rounded-full bg-brand animate-ping" />
+            <span className="text-text-primary font-medium">RepoPulse v1.0</span>
+            <span className="text-text-muted">/</span>
+            <span className="text-text-secondary">Official GitHub REST API Engine</span>
+          </div>
         </div>
 
-        {/* Title & Tagline */}
-        <h1 className="text-4xl sm:text-6xl font-bold tracking-tight text-text-primary max-w-3xl mx-auto">
-          GitHub repository intelligence for developers.
-        </h1>
-        <p className="mt-4 text-base sm:text-lg text-text-secondary max-w-2xl mx-auto">
-          Analyze public GitHub profiles, repository health scores, language distributions, and commit recency using real-time GitHub REST API data.
-        </p>
+        {/* Hero Typography */}
+        <div className="mt-8 text-center max-w-4xl mx-auto">
+          <h1 className="text-4xl sm:text-7xl font-extrabold tracking-tighter text-text-primary leading-[1.08]">
+            GitHub repository intelligence for developers.
+          </h1>
+          <p className="mt-6 text-base sm:text-xl text-text-secondary max-w-2xl mx-auto font-normal leading-relaxed">
+            Real-time public telemetry, byte-accurate language distribution, and deterministic health scoring for modern software engineers.
+          </p>
+        </div>
 
-        {/* Search Field */}
-        <form onSubmit={handleSubmit} className="mt-10 max-w-xl mx-auto">
-          <div className="relative flex items-center shadow-lg">
-            <div className="absolute left-4 text-text-muted">
+        {/* Interactive Command Search Bar */}
+        <div className="mt-10 max-w-2xl mx-auto">
+          <form
+            onSubmit={handleSubmit}
+            className="group relative flex items-center rounded-2xl border-2 border-border bg-surface-subtle/90 p-2 shadow-2xl focus-within:border-brand/70 focus-within:shadow-brand/5 transition-all"
+          >
+            <div className="pl-3 text-text-muted group-focus-within:text-brand transition-colors">
               <Search className="h-5 w-5" />
             </div>
+
             <input
               ref={inputRef}
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter a GitHub username (e.g. abhi-byte62)"
-              className="w-full rounded-xl border border-border bg-surface py-4 pl-12 pr-32 text-base text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent transition-all font-mono"
+              placeholder="Enter GitHub username (e.g. abhi-byte62)"
+              className="w-full bg-transparent px-3 py-3 text-base text-text-primary placeholder:text-text-muted focus:outline-none font-mono tracking-tight"
               autoFocus
             />
-            <div className="absolute right-2 flex items-center gap-1.5">
+
+            <div className="flex items-center gap-2 pr-1">
+              <kbd className="hidden sm:inline-block rounded border border-border bg-surface-secondary px-2 py-1 text-xs font-mono text-text-muted">
+                /
+              </kbd>
               <button
                 type="submit"
-                className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-background hover:bg-accent-hover transition-colors"
+                className="flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-xs font-bold text-background uppercase tracking-wider hover:bg-brand-hover active:scale-95 transition-all shadow-md"
               >
                 <span>Analyze</span>
                 <ArrowRight className="h-4 w-4" />
               </button>
             </div>
-          </div>
-        </form>
+          </form>
 
-        {/* Quick Sample Links */}
-        <div className="mt-4 flex flex-wrap items-center justify-center gap-2 text-xs text-text-muted font-mono">
-          <span>Try:</span>
-          {sampleUsers.map((user) => (
-            <button
-              key={user}
-              onClick={() => navigate(`/u/${user}`)}
-              className="rounded-md border border-border bg-surface px-2.5 py-1 text-text-secondary hover:text-accent hover:border-border-active transition-colors"
-            >
-              @{user}
-            </button>
-          ))}
+          {/* Quick Suggestions Cards */}
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+            <span className="text-xs font-mono text-text-muted mr-1">Sample accounts:</span>
+            {sampleUsers.map((item) => (
+              <button
+                key={item.username}
+                onClick={() => navigate(`/u/${item.username}`)}
+                className="group inline-flex items-center gap-2 rounded-lg border border-border bg-surface-subtle px-3 py-1.5 text-xs text-text-secondary hover:border-brand/40 hover:bg-surface-secondary hover:text-text-primary transition-all font-mono"
+              >
+                <span className="font-semibold text-text-primary group-hover:text-brand transition-colors">@{item.username}</span>
+                <span className="rounded bg-surface-secondary px-1.5 py-0.2 text-[10px] text-text-muted border border-border/60">
+                  {item.tag}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
 
-        {/* Value Pillars Grid */}
-        <div className="mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 text-left">
-          <div className="rounded-xl border border-border bg-surface p-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-secondary border border-border mb-4">
-              <ShieldCheck className="h-5 w-5 text-accent" />
+        {/* Ramp-Style Feature Matrix Grid */}
+        <div className="mt-24">
+          <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-6 pb-4 border-b border-border">
+            <div>
+              <span className="font-mono uppercase text-xs tracking-wider text-brand font-semibold">Engine Features</span>
+              <h2 className="text-2xl font-bold tracking-tight text-text-primary mt-1">
+                Built for technical credibility.
+              </h2>
             </div>
-            <h3 className="text-sm font-semibold text-text-primary">RepoPulse Health Score</h3>
-            <p className="text-xs text-text-secondary mt-2 leading-relaxed">
-              Deterministic 0-100 heuristic evaluating push freshness, documentation depth, open source licensing, and community adoption.
-            </p>
+            <span className="font-mono text-xs text-text-muted mt-2 sm:mt-0">
+              Zero fake data • Byte-level verification
+            </span>
           </div>
 
-          <div className="rounded-xl border border-border bg-surface p-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-secondary border border-border mb-4">
-              <Code2 className="h-5 w-5 text-purple-400" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-border rounded-2xl overflow-hidden border border-border">
+            {/* Cell 1 */}
+            <div className="bg-surface p-8 flex flex-col justify-between hover:bg-surface-subtle transition-colors">
+              <div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand/10 border border-brand/20 text-brand mb-6">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <h3 className="text-base font-bold text-text-primary">RepoPulse Health Heuristic</h3>
+                <p className="text-xs text-text-secondary mt-2.5 leading-relaxed">
+                  Deterministic 0–100 maintainability scorecard evaluating commit recency, documentation completeness, open source licensing, and community triage.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-border/60 flex items-center justify-between text-xs font-mono text-text-muted">
+                <span>4 Diagnostic Vectors</span>
+                <span className="text-brand font-semibold">0–100 Pts</span>
+              </div>
             </div>
-            <h3 className="text-sm font-semibold text-text-primary">Byte-Level Language Analytics</h3>
-            <p className="text-xs text-text-secondary mt-2 leading-relaxed">
-              Aggregates raw code byte distributions directly across public repositories to produce precise language percentage breakdowns.
-            </p>
-          </div>
 
-          <div className="rounded-xl border border-border bg-surface p-6">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface-secondary border border-border mb-4">
-              <Zap className="h-5 w-5 text-emerald-400" />
+            {/* Cell 2 */}
+            <div className="bg-surface p-8 flex flex-col justify-between hover:bg-surface-subtle transition-colors">
+              <div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-500/10 border border-sky-500/20 text-sky-400 mb-6">
+                  <Code2 className="h-5 w-5" />
+                </div>
+                <h3 className="text-base font-bold text-text-primary">Byte-Accurate Language Maps</h3>
+                <p className="text-xs text-text-secondary mt-2.5 leading-relaxed">
+                  Queries actual GitHub language bytes across non-fork repositories to compute exact percentage distributions with official GitHub hex colors.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-border/60 flex items-center justify-between text-xs font-mono text-text-muted">
+                <span>Raw Byte Precision</span>
+                <span className="text-sky-400 font-semibold">100% Verified</span>
+              </div>
             </div>
-            <h3 className="text-sm font-semibold text-text-primary">Zero Secrets & Rate Conscious</h3>
-            <p className="text-xs text-text-secondary mt-2 leading-relaxed">
-              Backend architecture safeguards all API credentials and uses intelligent caching with LRU cache to respect GitHub rate limits.
-            </p>
+
+            {/* Cell 3 */}
+            <div className="bg-surface p-8 flex flex-col justify-between hover:bg-surface-subtle transition-colors">
+              <div>
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 mb-6">
+                  <Zap className="h-5 w-5" />
+                </div>
+                <h3 className="text-base font-bold text-text-primary">Rate-Conscious Architecture</h3>
+                <p className="text-xs text-text-secondary mt-2.5 leading-relaxed">
+                  In-memory LRU caching and strict request throttling safeguard API limits while keeping response times under 300ms for repeated requests.
+                </p>
+              </div>
+              <div className="mt-6 pt-4 border-t border-border/60 flex items-center justify-between text-xs font-mono text-text-muted">
+                <span>LRU Cached (5m TTL)</span>
+                <span className="text-emerald-400 font-semibold">&lt;300ms SLA</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Live Interactive Developer Preview Ribbon */}
+        <div className="mt-16 rounded-2xl border border-border bg-surface-subtle p-6 sm:p-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-2">
+                <Terminal className="h-4 w-4 text-brand" />
+                <span className="font-mono text-xs font-semibold text-text-primary uppercase tracking-wider">
+                  Live Example Snapshot
+                </span>
+                <span className="rounded bg-brand/10 border border-brand/20 px-2 py-0.5 text-[10px] font-mono text-brand">
+                  Live Query
+                </span>
+              </div>
+              <h3 className="text-lg font-bold text-text-primary mt-1.5">
+                Ready to inspect any public GitHub repository?
+              </h3>
+              <p className="text-xs text-text-secondary mt-1 max-w-xl">
+                Enter any public username to immediately generate their developer report, code breakdown, and repository health diagnostics.
+              </p>
+            </div>
+
+            <button
+              onClick={() => navigate('/u/abhi-byte62')}
+              className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-5 py-3 text-xs font-mono font-bold text-text-primary hover:border-brand hover:text-brand transition-all shrink-0 self-start md:self-auto shadow-sm"
+            >
+              <span>View @abhi-byte62 Profile</span>
+              <ArrowUpRight className="h-4 w-4" />
+            </button>
           </div>
         </div>
       </main>

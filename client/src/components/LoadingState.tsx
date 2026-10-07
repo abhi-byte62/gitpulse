@@ -17,9 +17,9 @@ export const LoadingState: React.FC<LoadingStateProps> = ({ username }) => {
   ];
 
   useEffect(() => {
-    const timer1 = setTimeout(() => setStep(1), 400);
-    const timer2 = setTimeout(() => setStep(2), 900);
-    const timer3 = setTimeout(() => setStep(3), 1400);
+    const timer1 = setTimeout(() => setStep(1), 350);
+    const timer2 = setTimeout(() => setStep(2), 750);
+    const timer3 = setTimeout(() => setStep(3), 1200);
 
     return () => {
       clearTimeout(timer1);
@@ -29,21 +29,21 @@ export const LoadingState: React.FC<LoadingStateProps> = ({ username }) => {
   }, []);
 
   return (
-    <div className="mx-auto max-w-2xl px-4 py-20 text-center">
+    <div className="mx-auto max-w-2xl px-4 py-24 text-center">
       {/* Spinner */}
-      <div className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-surface border border-border shadow-lg mb-6">
-        <Loader2 className="h-6 w-6 text-accent animate-spin" />
+      <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-surface border border-border shadow-xl mb-6">
+        <Loader2 className="h-6 w-6 text-brand animate-spin" />
       </div>
 
-      <h2 className="text-xl font-bold tracking-tight text-text-primary">
+      <h2 className="text-2xl font-extrabold tracking-tight text-text-primary">
         Analyzing GitHub Intelligence
       </h2>
-      <p className="text-sm text-text-secondary mt-1 max-w-md mx-auto">
+      <p className="text-sm text-text-secondary mt-1.5 max-w-md mx-auto">
         Querying real-time GitHub REST APIs and calculating repository metrics.
       </p>
 
       {/* Progressive Step Indicators */}
-      <div className="mt-8 rounded-xl border border-border bg-surface p-6 text-left space-y-3.5 shadow-sm">
+      <div className="mt-8 rounded-2xl border border-border bg-surface p-6 text-left space-y-3.5 shadow-sm">
         {steps.map((text, idx) => {
           const isDone = idx < step;
           const isCurrent = idx === step;
@@ -51,9 +51,9 @@ export const LoadingState: React.FC<LoadingStateProps> = ({ username }) => {
           return (
             <div key={idx} className="flex items-center gap-3 text-xs">
               {isDone ? (
-                <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                <CheckCircle2 className="h-4 w-4 text-brand shrink-0" />
               ) : isCurrent ? (
-                <Loader2 className="h-4 w-4 text-accent animate-spin shrink-0" />
+                <Loader2 className="h-4 w-4 text-sky-400 animate-spin shrink-0" />
               ) : (
                 <div className="h-4 w-4 rounded-full border border-border shrink-0" />
               )}
@@ -62,7 +62,7 @@ export const LoadingState: React.FC<LoadingStateProps> = ({ username }) => {
                   isDone
                     ? 'text-text-muted line-through font-mono'
                     : isCurrent
-                    ? 'text-text-primary font-medium font-mono'
+                    ? 'text-text-primary font-bold font-mono'
                     : 'text-text-muted font-mono'
                 }
               >
@@ -73,10 +73,10 @@ export const LoadingState: React.FC<LoadingStateProps> = ({ username }) => {
         })}
       </div>
 
-      {/* Skeleton cards preview */}
-      <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 animate-pulse opacity-40">
+      {/* Skeleton preview */}
+      <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 animate-pulse opacity-30">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="h-20 rounded-xl bg-surface border border-border" />
+          <div key={i} className="h-20 rounded-2xl bg-surface border border-border" />
         ))}
       </div>
     </div>

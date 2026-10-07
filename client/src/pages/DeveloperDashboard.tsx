@@ -9,7 +9,10 @@ import {
   Calendar,
   Search,
   Check,
-  Copy
+  Copy,
+  LayoutGrid,
+  Activity,
+  FolderGit2
 } from 'lucide-react';
 import { api, ApiError } from '../services/api';
 import { NormalizedDeveloperResponse } from '../types';
@@ -90,22 +93,30 @@ export const DeveloperDashboard: React.FC = () => {
   );
 
   return (
-    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       {/* Profile Header */}
-      <div className="rounded-xl border border-border bg-surface p-6 sm:p-8 shadow-sm">
+      <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5">
-            <img
-              src={profile.avatarUrl}
-              alt={`${profile.username}'s avatar`}
-              className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl border border-border/80 object-cover shadow-md"
-            />
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+            <div className="relative">
+              <img
+                src={profile.avatarUrl}
+                alt={`${profile.username}'s avatar`}
+                className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl border-2 border-border object-cover shadow-lg"
+              />
+              <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-brand border-2 border-surface flex items-center justify-center">
+                <span className="h-2 w-2 rounded-full bg-background" />
+              </div>
+            </div>
+
             <div>
               <div className="flex items-center gap-3 flex-wrap">
-                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-text-primary">
+                <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-text-primary">
                   {profile.name || profile.username}
                 </h1>
-                <span className="font-mono text-sm text-text-muted">@{profile.username}</span>
+                <span className="font-mono text-sm text-brand font-semibold bg-brand/10 px-2.5 py-0.5 rounded-lg border border-brand/20">
+                  @{profile.username}
+                </span>
               </div>
 
               {profile.bio && (
@@ -117,14 +128,14 @@ export const DeveloperDashboard: React.FC = () => {
               {/* Metadata row */}
               <div className="flex flex-wrap items-center gap-4 text-xs text-text-muted mt-3 font-mono">
                 {profile.company && (
-                  <span className="flex items-center gap-1.5">
-                    <Building className="h-3.5 w-3.5 text-text-secondary" />
+                  <span className="flex items-center gap-1.5 text-text-secondary">
+                    <Building className="h-3.5 w-3.5 text-text-muted" />
                     {profile.company}
                   </span>
                 )}
                 {profile.location && (
-                  <span className="flex items-center gap-1.5">
-                    <MapPin className="h-3.5 w-3.5 text-text-secondary" />
+                  <span className="flex items-center gap-1.5 text-text-secondary">
+                    <MapPin className="h-3.5 w-3.5 text-text-muted" />
                     {profile.location}
                   </span>
                 )}
@@ -133,9 +144,9 @@ export const DeveloperDashboard: React.FC = () => {
                     href={profile.blog.startsWith('http') ? profile.blog : `https://${profile.blog}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1.5 hover:text-accent transition-colors"
+                    className="flex items-center gap-1.5 text-brand hover:underline transition-colors"
                   >
-                    <LinkIcon className="h-3.5 w-3.5 text-text-secondary" />
+                    <LinkIcon className="h-3.5 w-3.5" />
                     <span className="truncate max-w-[180px]">{profile.blog.replace(/^https?:\/\//, '')}</span>
                   </a>
                 )}
@@ -144,14 +155,14 @@ export const DeveloperDashboard: React.FC = () => {
                     href={`https://twitter.com/${profile.twitterUsername}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-1.5 hover:text-accent transition-colors"
+                    className="flex items-center gap-1.5 hover:text-text-primary transition-colors"
                   >
-                    <Twitter className="h-3.5 w-3.5 text-text-secondary" />
+                    <Twitter className="h-3.5 w-3.5 text-sky-400" />
                     @{profile.twitterUsername}
                   </a>
                 )}
                 <span className="flex items-center gap-1.5">
-                  <Calendar className="h-3.5 w-3.5 text-text-secondary" />
+                  <Calendar className="h-3.5 w-3.5 text-text-muted" />
                   Joined {new Date(profile.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short' })}
                 </span>
               </div>
@@ -162,19 +173,19 @@ export const DeveloperDashboard: React.FC = () => {
           <div className="flex items-center gap-2.5 self-start md:self-auto">
             <button
               onClick={handleCopyLink}
-              className="flex items-center gap-1.5 rounded-lg border border-border bg-surface-secondary px-3.5 py-2 text-xs font-medium text-text-secondary hover:text-text-primary hover:border-border-active transition-colors"
+              className="flex items-center gap-1.5 rounded-xl border border-border bg-surface-subtle px-4 py-2.5 text-xs font-mono font-medium text-text-secondary hover:text-text-primary hover:border-brand/40 transition-all"
             >
-              {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
-              <span>{copied ? 'Link Copied' : 'Share'}</span>
+              {copied ? <Check className="h-3.5 w-3.5 text-brand" /> : <Copy className="h-3.5 w-3.5" />}
+              <span>{copied ? 'Copied' : 'Share'}</span>
             </button>
 
             <a
               href={profile.profileUrl}
               target="_blank"
               rel="noreferrer"
-              className="flex items-center gap-1.5 rounded-lg bg-accent px-3.5 py-2 text-xs font-semibold text-background hover:bg-accent-hover transition-colors"
+              className="flex items-center gap-2 rounded-xl bg-brand px-4 py-2.5 text-xs font-bold text-background uppercase tracking-wider hover:bg-brand-hover active:scale-95 transition-all shadow-md"
             >
-              <span>GitHub Profile</span>
+              <span>GitHub</span>
               <ExternalLink className="h-3.5 w-3.5" />
             </a>
           </div>
@@ -185,40 +196,43 @@ export const DeveloperDashboard: React.FC = () => {
       <StatsGrid stats={stats} insights={insights} followers={profile.followers} />
 
       {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-border pb-1">
+      <div className="flex items-center gap-2 border-b border-border pb-2">
         <button
           onClick={() => setActiveTab('overview')}
-          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors ${
+          className={`flex items-center gap-2 px-4 py-2 text-xs font-mono font-bold rounded-xl transition-all ${
             activeTab === 'overview'
-              ? 'bg-surface border border-border text-accent shadow-sm'
-              : 'text-text-secondary hover:text-text-primary'
+              ? 'bg-brand/10 border border-brand/30 text-brand shadow-sm'
+              : 'text-text-secondary hover:text-text-primary hover:bg-surface-subtle'
           }`}
         >
-          Overview
+          <LayoutGrid className="h-3.5 w-3.5" />
+          <span>Overview</span>
         </button>
         <button
           onClick={() => setActiveTab('repositories')}
-          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 ${
+          className={`flex items-center gap-2 px-4 py-2 text-xs font-mono font-bold rounded-xl transition-all ${
             activeTab === 'repositories'
-              ? 'bg-surface border border-border text-accent shadow-sm'
-              : 'text-text-secondary hover:text-text-primary'
+              ? 'bg-brand/10 border border-brand/30 text-brand shadow-sm'
+              : 'text-text-secondary hover:text-text-primary hover:bg-surface-subtle'
           }`}
         >
+          <FolderGit2 className="h-3.5 w-3.5" />
           <span>All Repositories</span>
-          <span className="rounded-full bg-surface-secondary px-1.5 py-0.2 text-[10px] font-mono text-text-muted">
+          <span className="rounded-full bg-surface-secondary px-2 py-0.2 text-[10px] text-text-muted border border-border">
             {repositories.length}
           </span>
         </button>
         <button
           onClick={() => setActiveTab('activity')}
-          className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5 ${
+          className={`flex items-center gap-2 px-4 py-2 text-xs font-mono font-bold rounded-xl transition-all ${
             activeTab === 'activity'
-              ? 'bg-surface border border-border text-accent shadow-sm'
-              : 'text-text-secondary hover:text-text-primary'
+              ? 'bg-brand/10 border border-brand/30 text-brand shadow-sm'
+              : 'text-text-secondary hover:text-text-primary hover:bg-surface-subtle'
           }`}
         >
-          <span>Activity Timeline</span>
-          <span className="rounded-full bg-surface-secondary px-1.5 py-0.2 text-[10px] font-mono text-text-muted">
+          <Activity className="h-3.5 w-3.5" />
+          <span>Activity Stream</span>
+          <span className="rounded-full bg-surface-secondary px-2 py-0.2 text-[10px] text-text-muted border border-border">
             {activity.length}
           </span>
         </button>
@@ -239,9 +253,9 @@ export const DeveloperDashboard: React.FC = () => {
                 communityScore: Math.min(20, Math.round(stats.stars > 0 ? 15 : 5)),
                 factors: {
                   positive: [
-                    `${insights.maintenanceRate}% of repositories maintained within the last 6 months`,
+                    `${insights.maintenanceRate}% of public repositories pushed within the last 6 months`,
                     `Active across ${insights.activeLanguagesCount} programming languages`,
-                    `Accumulated ${stats.stars} total stars on public repositories`
+                    `Accumulated ${stats.stars} total stars across public repositories`
                   ],
                   improvements: [
                     stats.licenseCount < stats.repositories
@@ -250,8 +264,8 @@ export const DeveloperDashboard: React.FC = () => {
                   ]
                 }
               }}
-              title="RepoPulse Developer Health Index"
-              subtitle="Aggregated maintainability, freshness, and code quality index across all public repositories."
+              title="Developer Health Index"
+              subtitle="Aggregated maintainability, push freshness, and code quality index across all public repositories."
             />
 
             <LanguageDistribution languages={languages} />
@@ -262,19 +276,19 @@ export const DeveloperDashboard: React.FC = () => {
 
           {/* Top Starred Repositories */}
           <div>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 pb-2 border-b border-border">
               <div>
-                <h2 className="text-base font-semibold text-text-primary">Top Repositories</h2>
-                <p className="text-xs text-text-secondary mt-0.5">Most starred public repositories.</p>
+                <h2 className="text-base font-bold text-text-primary tracking-tight">Top Repositories</h2>
+                <p className="text-xs text-text-secondary mt-0.5">Most starred public repositories in ecosystem.</p>
               </div>
               <button
                 onClick={() => {
                   setActiveTab('repositories');
                   setSortBy('stars');
                 }}
-                className="text-xs text-accent hover:underline font-medium"
+                className="text-xs font-mono text-brand hover:underline font-bold"
               >
-                View all ({repositories.length})
+                View all ({repositories.length}) &rarr;
               </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -286,9 +300,9 @@ export const DeveloperDashboard: React.FC = () => {
 
           {/* Recently Updated Repositories */}
           <div>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 pb-2 border-b border-border">
               <div>
-                <h2 className="text-base font-semibold text-text-primary">Recently Active</h2>
+                <h2 className="text-base font-bold text-text-primary tracking-tight">Recently Active</h2>
                 <p className="text-xs text-text-secondary mt-0.5">Repositories with the most recent commits/pushes.</p>
               </div>
               <button
@@ -296,9 +310,9 @@ export const DeveloperDashboard: React.FC = () => {
                   setActiveTab('repositories');
                   setSortBy('updated');
                 }}
-                className="text-xs text-accent hover:underline font-medium"
+                className="text-xs font-mono text-brand hover:underline font-bold"
               >
-                View all ({repositories.length})
+                View all ({repositories.length}) &rarr;
               </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -314,24 +328,23 @@ export const DeveloperDashboard: React.FC = () => {
       {activeTab === 'repositories' && (
         <div className="space-y-6">
           {/* Filter Bar */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 rounded-xl border border-border bg-surface p-3 shadow-sm">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 rounded-2xl border border-border bg-surface p-3 shadow-sm">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-text-muted" />
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-text-muted" />
               <input
                 type="text"
                 value={repoSearch}
                 onChange={(e) => setRepoSearch(e.target.value)}
                 placeholder="Filter repositories by name or description..."
-                className="w-full rounded-lg border border-border bg-surface-secondary py-1.5 pl-9 pr-3 text-xs text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent font-mono"
+                className="w-full rounded-xl border border-border bg-surface-subtle py-2 pl-10 pr-3 text-xs text-text-primary placeholder:text-text-muted focus:border-brand focus:outline-none font-mono"
               />
             </div>
 
             <div className="flex items-center gap-2">
-              {/* Language Selector */}
               <select
                 value={selectedLanguage}
                 onChange={(e) => setSelectedLanguage(e.target.value)}
-                className="rounded-lg border border-border bg-surface-secondary px-2.5 py-1.5 text-xs text-text-secondary focus:border-accent focus:outline-none font-mono"
+                className="rounded-xl border border-border bg-surface-subtle px-3 py-2 text-xs text-text-secondary focus:border-brand focus:outline-none font-mono"
               >
                 <option value="all">All Languages ({repositories.length})</option>
                 {availableLanguages.map((lang) => (
@@ -341,11 +354,10 @@ export const DeveloperDashboard: React.FC = () => {
                 ))}
               </select>
 
-              {/* Sort Selector */}
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
-                className="rounded-lg border border-border bg-surface-secondary px-2.5 py-1.5 text-xs text-text-secondary focus:border-accent focus:outline-none font-mono"
+                className="rounded-xl border border-border bg-surface-subtle px-3 py-2 text-xs text-text-secondary focus:border-brand focus:outline-none font-mono"
               >
                 <option value="stars">Sort by Stars</option>
                 <option value="updated">Sort by Recently Updated</option>
@@ -363,8 +375,8 @@ export const DeveloperDashboard: React.FC = () => {
               ))}
             </div>
           ) : (
-            <div className="rounded-xl border border-border bg-surface p-12 text-center">
-              <p className="text-sm text-text-muted">No repositories match the current filters.</p>
+            <div className="rounded-2xl border border-border bg-surface p-12 text-center">
+              <p className="text-sm font-mono text-text-muted">No repositories match the current filters.</p>
             </div>
           )}
         </div>

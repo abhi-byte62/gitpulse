@@ -25,8 +25,8 @@ describe('App component', () => {
     );
 
     expect(screen.getByRole('heading', { level: 1, name: /GitHub repository intelligence for developers/i })).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Enter a GitHub username/i)).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/Enter GitHub username/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Analyze/i })).toBeInTheDocument();
-    expect(screen.getByText('RepoPulse Health Score')).toBeInTheDocument();
+    expect(screen.getByText(/RepoPulse Health Heuristic/i)).toBeInTheDocument();
   });
 });
