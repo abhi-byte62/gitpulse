@@ -11,7 +11,7 @@ dotenv.config();
 export function createApp(): Express {
   const app = express();
 
-  // Trust proxy for Vercel / reverse-proxy environments so express-rate-limit and IP detection work correctly
+  // Trust proxy for Vercel and reverse-proxy environments
   app.set('trust proxy', 1);
 
   // Security headers
@@ -21,27 +21,11 @@ export function createApp(): Express {
     })
   );
 
-  // CORS configuration: Support local development, Vercel deployments, and custom domains
+  // CORS configuration
   app.use(
     cors({
-      origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps, curl, server-to-server)
-        if (!origin) return callback(null, true);
-
-        const allowed = process.env.CLIENT_URL;
-        if (
-          !allowed ||
-          origin === allowed ||
-          origin.endsWith('.vercel.app') ||
-          origin.includes('localhost') ||
-          origin.includes('127.0.0.1')
-        ) {
-          return callback(null, true);
-        }
-
-        // Allow all in non-strict mode for public API consumption
-        return callback(null, true);
-      },
+      origin: true,
+      credentials: true,
       methods: ['GET', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
     })
@@ -53,23 +37,26 @@ export function createApp(): Express {
   // Global rate limiter to protect backend API with trust-proxy compatibility
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 200, // limit each IP to 200 requests per 15 minutes
+    max: 300, // limit each IP to 300 requests per 15 minutes
     standardHeaders: true,
     legacyHeaders: false,
-    validate: { trustProxy: false }, // Prevent crash in proxy environments
+    validate: { trustProxy: false },
     message: {
       error: 'RateLimitExceeded',
       message: 'Too many requests from this IP, please try again later.',
       statusCode: 429
     }
   });
-  app.use('/api', limiter);
+  app.use(limiter);
 
-  // Mount API routes
+  // Mount API routes on both '/api' and '/' to guarantee route resolution in both standalone and serverless modes
   app.use('/api', apiRouter);
+  app.use(apiRouter);
 
   // Global Error Handler
   app.use(errorHandler);
 
   return app;
 }
+
+export default createApp();
