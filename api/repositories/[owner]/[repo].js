@@ -1,12 +1,3 @@
-// server/src/app.ts
-import express from "express";
-import cors from "cors";
-import rateLimit from "express-rate-limit";
-import dotenv from "dotenv";
-
-// server/src/routes/apiRoutes.ts
-import { Router } from "express";
-
 // server/src/services/githubService.ts
 import { Octokit } from "octokit";
 
@@ -634,226 +625,41 @@ var GitHubService = class {
 };
 var githubService = new GitHubService();
 
-// server/src/controllers/developerController.ts
-async function getDeveloperAnalytics(req, res, next) {
-  try {
-    const username = req.params.username;
-    const analytics = await githubService.getDeveloperAnalytics(username);
-    res.json(analytics);
-  } catch (error) {
-    next(error);
-  }
-}
-async function getDeveloperRepositories(req, res, next) {
-  try {
-    const username = req.params.username;
-    const analytics = await githubService.getDeveloperAnalytics(username);
-    res.json({
-      repositories: analytics.repositories,
-      total: analytics.repositories.length
-    });
-  } catch (error) {
-    next(error);
-  }
-}
-async function getRateLimitStatus(_req, res, next) {
-  try {
-    const rateLimit2 = await githubService.getRateLimit();
-    res.json(rateLimit2);
-  } catch (error) {
-    next(error);
-  }
-}
-
-// server/src/controllers/repositoryController.ts
-async function getRepositoryDetails(req, res, next) {
-  try {
-    const owner = req.params.owner;
-    const repo = req.params.repo;
-    const details = await githubService.getRepositoryDetails(owner, repo);
-    res.json(details);
-  } catch (error) {
-    next(error);
-  }
-}
-
-// server/src/middleware/validator.ts
-import { z } from "zod";
-var usernameSchema = z.string().min(1, "Username is required").max(39, "GitHub username cannot exceed 39 characters").regex(/^[a-zA-Z0-9](?:[a-zA-Z0-9]|-(?=[a-zA-Z0-9])){0,38}$/, "Invalid GitHub username format");
-var repoNameSchema = z.string().min(1, "Repository name is required").max(100, "Repository name cannot exceed 100 characters").regex(/^[a-zA-Z0-9_.-]+$/, "Invalid repository name format");
-function validateUsername(req, res, next) {
-  const result = usernameSchema.safeParse(req.params.username);
-  if (!result.success) {
-    res.status(400).json({
-      error: "Invalid username",
-      message: result.error.errors[0]?.message || "Invalid GitHub username format.",
-      statusCode: 400
-    });
-    return;
-  }
-  req.params.username = result.data;
-  next();
-}
-function validateRepoParams(req, res, next) {
-  const ownerResult = usernameSchema.safeParse(req.params.owner);
-  const repoResult = repoNameSchema.safeParse(req.params.repo);
-  if (!ownerResult.success) {
-    res.status(400).json({
-      error: "Invalid owner username",
-      message: ownerResult.error.errors[0]?.message || "Invalid repository owner username format.",
-      statusCode: 400
-    });
-    return;
-  }
-  if (!repoResult.success) {
-    res.status(400).json({
-      error: "Invalid repository name",
-      message: repoResult.error.errors[0]?.message || "Invalid repository name format.",
-      statusCode: 400
-    });
-    return;
-  }
-  req.params.owner = ownerResult.data;
-  req.params.repo = repoResult.data;
-  next();
-}
-
-// server/src/routes/apiRoutes.ts
-var apiRouter = Router();
-apiRouter.get("/health", (_req, res) => {
-  res.json({
-    status: "ok",
-    timestamp: (/* @__PURE__ */ new Date()).toISOString(),
-    service: "RepoPulse API",
-    version: "1.0.0"
-  });
-});
-apiRouter.get("/rate-limit", getRateLimitStatus);
-apiRouter.get("/developers/:username", validateUsername, getDeveloperAnalytics);
-apiRouter.get("/developers/:username/repositories", validateUsername, getDeveloperRepositories);
-apiRouter.get("/repositories/:owner/:repo", validateRepoParams, getRepositoryDetails);
-
-// server/src/middleware/errorHandler.ts
-function errorHandler(err, _req, res, _next) {
-  console.error("[RepoPulse Server Error]:", {
-    name: err?.name,
-    message: err?.message,
-    status: err?.status || err?.statusCode,
-    stack: process.env.NODE_ENV !== "production" ? err?.stack : void 0
-  });
-  if (err instanceof GitHubApiError || err?.name === "GitHubApiError") {
-    res.status(err.statusCode || 500).json({
-      error: err.name || "GitHubApiError",
-      message: err.message,
-      statusCode: err.statusCode || 500,
-      resetTime: err.resetTime
-    });
-    return;
-  }
-  const status = typeof err.status === "number" ? err.status : typeof err.statusCode === "number" ? err.statusCode : 500;
-  if (status === 404) {
-    res.status(404).json({
-      error: "NotFound",
-      message: err.message || "Resource not found on GitHub.",
-      statusCode: 404
-    });
-    return;
-  }
-  if (status === 403 || status === 429) {
-    const resetHeader = err.response?.headers?.["x-ratelimit-reset"];
-    const resetTime = resetHeader ? new Date(parseInt(resetHeader, 10) * 1e3).toISOString() : void 0;
-    res.status(429).json({
-      error: "RateLimitExceeded",
-      message: "GitHub API rate limit reached. Please configure a GITHUB_TOKEN on Vercel or wait for the rate limit to reset.",
-      statusCode: 429,
-      resetTime
-    });
-    return;
-  }
-  if (status === 401) {
-    res.status(401).json({
-      error: "Unauthorized",
-      message: "GitHub API authentication failed. Please check the GITHUB_TOKEN environment variable configured on Vercel.",
-      statusCode: 401
-    });
-    return;
-  }
-  const message = status === 500 ? err.message && !err.message.includes("node_modules") ? err.message : "An unexpected server error occurred." : err.message || "Error occurred";
-  res.status(status).json({
-    error: err.name || "InternalServerError",
-    message,
-    statusCode: status
-  });
-}
-
-// server/src/app.ts
-dotenv.config();
-function createApp() {
-  const app2 = express();
-  app2.set("trust proxy", 1);
-  app2.disable("x-powered-by");
-  app2.use((_req, res, next) => {
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    res.setHeader("X-Frame-Options", "DENY");
-    res.setHeader("X-XSS-Protection", "1; mode=block");
-    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
-    next();
-  });
-  app2.use(
-    cors({
-      origin: true,
-      credentials: true,
-      methods: ["GET", "OPTIONS"],
-      allowedHeaders: ["Content-Type", "Authorization"]
-    })
-  );
-  app2.use(express.json({ limit: "50kb" }));
-  const limiter = rateLimit({
-    windowMs: 15 * 60 * 1e3,
-    // 15 minutes
-    max: 300,
-    standardHeaders: true,
-    legacyHeaders: false,
-    validate: { trustProxy: false },
-    message: {
-      error: "RateLimitExceeded",
-      message: "Too many requests from this IP, please try again later.",
-      statusCode: 429
+// api/repositories/[owner]/[repo].ts
+async function handler(req, res) {
+  res.setHeader("Content-Type", "application/json");
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  let owner = req.query?.owner;
+  let repo = req.query?.repo;
+  if (!owner || !repo) {
+    const parts = req.url?.split("?")[0]?.split("/").filter(Boolean);
+    if (parts && parts.length >= 3) {
+      owner = parts[parts.length - 2];
+      repo = parts[parts.length - 1];
     }
-  });
-  app2.use(limiter);
-  const rootHandler = (_req, res) => {
-    res.json({
-      status: "ok",
-      service: "RepoPulse API",
-      timestamp: (/* @__PURE__ */ new Date()).toISOString(),
-      routes: [
-        "/api/health",
-        "/api/rate-limit",
-        "/api/developers/:username",
-        "/api/repositories/:owner/:repo"
-      ]
-    });
-  };
-  app2.get("/", rootHandler);
-  app2.get("/api", rootHandler);
-  app2.use("/api", apiRouter);
-  app2.use(apiRouter);
-  app2.use((req, res) => {
-    res.status(404).json({
-      error: "NotFound",
-      message: `API endpoint not found: ${req.method} ${req.originalUrl || req.url}`,
-      statusCode: 404
-    });
-  });
-  app2.use(errorHandler);
-  return app2;
+  }
+  if (!owner || !repo) {
+    res.statusCode = 400;
+    res.end(JSON.stringify({ error: "BadRequest", message: "Both repository owner and name are required." }));
+    return;
+  }
+  try {
+    const details = await githubService.getRepositoryDetails(owner, repo);
+    res.statusCode = 200;
+    res.end(JSON.stringify(details));
+  } catch (error) {
+    const status = error.statusCode || error.status || 500;
+    res.statusCode = status;
+    res.end(
+      JSON.stringify({
+        error: error.name || (status === 404 ? "NotFound" : "InternalServerError"),
+        message: error.message || "Error occurred while fetching repository details.",
+        statusCode: status,
+        resetTime: error.resetTime
+      })
+    );
+  }
 }
-var app_default = createApp();
-
-// server/src/serverless.ts
-var app = createApp();
-var serverless_default = app;
 export {
-  serverless_default as default
+  handler as default
 };
