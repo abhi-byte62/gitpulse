@@ -32,10 +32,11 @@ export class GitHubService {
    * Retrieves an Octokit instance with the latest GITHUB_TOKEN and required User-Agent.
    */
   private getOctokit(): Octokit {
-    const token = process.env.GITHUB_TOKEN?.trim();
+    const rawToken = process.env.GITHUB_TOKEN || process.env.GITHUB_API_TOKEN || process.env.GH_TOKEN;
+    const token = rawToken ? rawToken.trim() : undefined;
     const userAgent = 'RepoPulse-App/1.0.0 (https://github.com/abhi-byte62/gitpulse)';
 
-    if (token) {
+    if (token && token.length > 0) {
       return new Octokit({
         auth: token,
         userAgent

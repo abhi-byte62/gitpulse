@@ -3,7 +3,7 @@ import { aggregateLanguages, normalizeSingleRepoLanguages } from './languageAnal
 
 describe('aggregateLanguages', () => {
   it('correctly calculates percentage breakdown from detailed byte maps', () => {
-    const detailedMaps = [
+    const detailedMaps: Record<string, number>[] = [
       { TypeScript: 50000, JavaScript: 25000 },
       { TypeScript: 25000, Python: 25000 }
     ];

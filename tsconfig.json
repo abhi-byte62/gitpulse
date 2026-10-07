@@ -10,6 +10,6 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
   },
-  "include": ["server/src/**/*"],
+  "include": ["server/src/**/*", "api/**/*"],
   "exclude": ["node_modules", "server/dist", "client/dist"]
 }
