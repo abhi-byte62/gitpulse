@@ -11,7 +11,7 @@
   "scripts": {
     "dev": "concurrently \"npm run dev --workspace=server\" \"npm run dev --workspace=client\"",
     "dev:server": "npm run dev --workspace=server",
-    "build:api": "esbuild api/health.ts --bundle --platform=node --target=node18 --format=esm --packages=external --outfile=api/health.js && esbuild api/rate-limit.ts --bundle --platform=node --target=node18 --format=esm --packages=external --outfile=api/rate-limit.js && esbuild \"api/developers/[username].ts\" --bundle --platform=node --target=node18 --format=esm --packages=external --outfile=\"api/developers/[username].js\" && esbuild \"api/repositories/[owner]/[repo].ts\" --bundle --platform=node --target=node18 --format=esm --packages=external --outfile=\"api/repositories/[owner]/[repo].js\"",
+    "build:api": "esbuild server/src/api/health.ts --bundle --platform=node --target=node18 --format=esm --packages=external --outfile=api/health.js && esbuild server/src/api/rate-limit.ts --bundle --platform=node --target=node18 --format=esm --packages=external --outfile=api/rate-limit.js && esbuild \"server/src/api/developers/[username].ts\" --bundle --platform=node --target=node18 --format=esm --packages=external --outfile=\"api/developers/[username].js\" && esbuild \"server/src/api/repositories/[owner]/[repo].ts\" --bundle --platform=node --target=node18 --format=esm --packages=external --outfile=\"api/repositories/[owner]/[repo].js\"",
     "build": "npm run build:api && npm run build --workspace=client",
     "build:client": "npm run build --workspace=client",
     "build:server": "tsc -p server/tsconfig.json",

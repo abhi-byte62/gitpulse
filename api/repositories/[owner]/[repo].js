@@ -625,7 +625,7 @@ var GitHubService = class {
 };
 var githubService = new GitHubService();
 
-// api/repositories/[owner]/[repo].ts
+// server/src/api/repositories/[owner]/[repo].ts
 async function handler(req, res) {
   res.setHeader("Content-Type", "application/json");
   res.setHeader("Access-Control-Allow-Origin", "*");

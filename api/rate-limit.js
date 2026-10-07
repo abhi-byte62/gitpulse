@@ -625,7 +625,7 @@ var GitHubService = class {
 };
 var githubService = new GitHubService();
 
-// api/rate-limit.ts
+// server/src/api/rate-limit.ts
 async function handler(_req, res) {
   res.setHeader("Content-Type", "application/json");
   res.setHeader("Access-Control-Allow-Origin", "*");

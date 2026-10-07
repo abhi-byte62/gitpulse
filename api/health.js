@@ -1,4 +1,4 @@
-// api/health.ts
+// server/src/api/health.ts
 async function handler(_req, res) {
   res.statusCode = 200;
   res.setHeader("Content-Type", "application/json");

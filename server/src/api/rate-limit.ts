@@ -1,4 +1,4 @@
-import { githubService } from '../server/src/services/githubService.js';
+import { githubService } from '../services/githubService.js';
 
 export default async function handler(_req: any, res: any) {
   res.setHeader('Content-Type', 'application/json');
