@@ -39249,7 +39249,6 @@ function createApp() {
     windowMs: 15 * 60 * 1e3,
     // 15 minutes
     max: 300,
-    // limit each IP to 300 requests per 15 minutes
     standardHeaders: true,
     legacyHeaders: false,
     validate: { trustProxy: false },
@@ -39260,8 +39259,28 @@ function createApp() {
     }
   });
   app.use(limiter);
+  app.get("/", (_req, res) => {
+    res.json({
+      status: "ok",
+      service: "RepoPulse API",
+      timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+      routes: [
+        "/api/health",
+        "/api/rate-limit",
+        "/api/developers/:username",
+        "/api/repositories/:owner/:repo"
+      ]
+    });
+  });
   app.use("/api", apiRouter);
   app.use(apiRouter);
+  app.use((req, res) => {
+    res.status(404).json({
+      error: "NotFound",
+      message: `API endpoint not found: ${req.method} ${req.originalUrl || req.url}`,
+      statusCode: 404
+    });
+  });
   app.use(errorHandler);
   return app;
 }

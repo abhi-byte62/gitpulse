@@ -34,10 +34,10 @@ export function createApp(): Express {
   // Parse JSON payloads with reasonable size limit
   app.use(express.json({ limit: '50kb' }));
 
-  // Global rate limiter to protect backend API with trust-proxy compatibility
+  // Global rate limiter with trust-proxy compatibility
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 300, // limit each IP to 300 requests per 15 minutes
+    max: 300,
     standardHeaders: true,
     legacyHeaders: false,
     validate: { trustProxy: false },
@@ -49,9 +49,33 @@ export function createApp(): Express {
   });
   app.use(limiter);
 
+  // Root diagnostics endpoint (for testing root-level serverless invocation)
+  app.get('/', (_req, res) => {
+    res.json({
+      status: 'ok',
+      service: 'RepoPulse API',
+      timestamp: new Date().toISOString(),
+      routes: [
+        '/api/health',
+        '/api/rate-limit',
+        '/api/developers/:username',
+        '/api/repositories/:owner/:repo'
+      ]
+    });
+  });
+
   // Mount API routes on both '/api' and '/' to guarantee route resolution in both standalone and serverless modes
   app.use('/api', apiRouter);
   app.use(apiRouter);
+
+  // 404 handler for unmatched API routes
+  app.use((req, res) => {
+    res.status(404).json({
+      error: 'NotFound',
+      message: `API endpoint not found: ${req.method} ${req.originalUrl || req.url}`,
+      statusCode: 404
+    });
+  });
 
   // Global Error Handler
   app.use(errorHandler);
