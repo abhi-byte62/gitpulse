@@ -33,6 +33,7 @@
     "@types/cors": "^2.8.17",
     "@types/express": "^5.0.0",
     "@types/node": "^22.13.9",
+    "@vercel/node": "^22.0.0",
     "concurrently": "^9.1.2",
     "esbuild": "^0.25.0",
     "typescript": "^5.8.2"
