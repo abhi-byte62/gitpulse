@@ -822,7 +822,7 @@ function createApp() {
     }
   });
   app2.use(limiter);
-  app2.get("/", (_req, res) => {
+  const rootHandler = (_req, res) => {
     res.json({
       status: "ok",
       service: "RepoPulse API",
@@ -834,7 +834,9 @@ function createApp() {
         "/api/repositories/:owner/:repo"
       ]
     });
-  });
+  };
+  app2.get("/", rootHandler);
+  app2.get("/api", rootHandler);
   app2.use("/api", apiRouter);
   app2.use(apiRouter);
   app2.use((req, res) => {
@@ -851,9 +853,7 @@ var app_default = createApp();
 
 // server/src/serverless.ts
 var app = createApp();
-function handler(req, res) {
-  return app(req, res);
-}
+var serverless_default = app;
 export {
-  handler as default
+  serverless_default as default
 };

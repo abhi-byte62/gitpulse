@@ -54,8 +54,8 @@ export function createApp(): Express {
   });
   app.use(limiter);
 
-  // Root diagnostics endpoint (for testing root-level serverless invocation)
-  app.get('/', (_req, res) => {
+  // Root & /api diagnostics endpoint (for testing root-level serverless invocation)
+  const rootHandler = (_req: express.Request, res: express.Response) => {
     res.json({
       status: 'ok',
       service: 'RepoPulse API',
@@ -67,7 +67,9 @@ export function createApp(): Express {
         '/api/repositories/:owner/:repo'
       ]
     });
-  });
+  };
+  app.get('/', rootHandler);
+  app.get('/api', rootHandler);
 
   // Mount API routes on both '/api' and '/' to guarantee route resolution in both standalone and serverless modes
   app.use('/api', apiRouter);
