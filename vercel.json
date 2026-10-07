@@ -1,15 +1,49 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "npm run build",
-  "outputDirectory": "client/dist",
-  "rewrites": [
+  "version": 2,
+  "builds": [
     {
-      "source": "/api/(.*)",
-      "destination": "/api/$1"
+      "src": "api/*.js",
+      "use": "@vercel/node"
     },
     {
-      "source": "/((?!api).*)",
-      "destination": "/index.html"
+      "src": "api/developers/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/repositories/**/*.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "client/dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/health",
+      "dest": "/api/health.js"
+    },
+    {
+      "src": "/api/rate-limit",
+      "dest": "/api/rate-limit.js"
+    },
+    {
+      "src": "/api/developers/(?<username>[^/]+)",
+      "dest": "/api/developers/[username].js?username=$username"
+    },
+    {
+      "src": "/api/repositories/(?<owner>[^/]+)/(?<repo>[^/]+)",
+      "dest": "/api/repositories/[owner]/[repo].js?owner=$owner&repo=$repo"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
