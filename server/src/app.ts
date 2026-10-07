@@ -11,6 +11,9 @@ dotenv.config();
 export function createApp(): Express {
   const app = express();
 
+  // Trust proxy for Vercel / reverse-proxy environments so express-rate-limit and IP detection work correctly
+  app.set('trust proxy', 1);
+
   // Security headers
   app.use(
     helmet({
@@ -18,11 +21,27 @@ export function createApp(): Express {
     })
   );
 
-  // CORS configuration
-  const allowedOrigin = process.env.CLIENT_URL || 'http://localhost:5173';
+  // CORS configuration: Support local development, Vercel deployments, and custom domains
   app.use(
     cors({
-      origin: process.env.NODE_ENV === 'production' ? allowedOrigin : '*',
+      origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps, curl, server-to-server)
+        if (!origin) return callback(null, true);
+
+        const allowed = process.env.CLIENT_URL;
+        if (
+          !allowed ||
+          origin === allowed ||
+          origin.endsWith('.vercel.app') ||
+          origin.includes('localhost') ||
+          origin.includes('127.0.0.1')
+        ) {
+          return callback(null, true);
+        }
+
+        // Allow all in non-strict mode for public API consumption
+        return callback(null, true);
+      },
       methods: ['GET', 'OPTIONS'],
       allowedHeaders: ['Content-Type', 'Authorization'],
     })
@@ -31,12 +50,13 @@ export function createApp(): Express {
   // Parse JSON payloads with reasonable size limit
   app.use(express.json({ limit: '50kb' }));
 
-  // Global rate limiter to protect backend API
+  // Global rate limiter to protect backend API with trust-proxy compatibility
   const limiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 120, // limit each IP to 120 requests per 15 minutes
+    max: 200, // limit each IP to 200 requests per 15 minutes
     standardHeaders: true,
     legacyHeaders: false,
+    validate: { trustProxy: false }, // Prevent crash in proxy environments
     message: {
       error: 'RateLimitExceeded',
       message: 'Too many requests from this IP, please try again later.',

@@ -28,15 +28,23 @@ export class GitHubApiError extends Error {
 }
 
 export class GitHubService {
-  private octokit: Octokit;
-
-  constructor() {
+  /**
+   * Retrieves an Octokit instance with the latest GITHUB_TOKEN and required User-Agent.
+   */
+  private getOctokit(): Octokit {
     const token = process.env.GITHUB_TOKEN?.trim();
+    const userAgent = 'RepoPulse-App/1.0.0 (https://github.com/abhi-byte62/gitpulse)';
+
     if (token) {
-      this.octokit = new Octokit({ auth: token });
-    } else {
-      this.octokit = new Octokit();
+      return new Octokit({
+        auth: token,
+        userAgent
+      });
     }
+
+    return new Octokit({
+      userAgent
+    });
   }
 
   /**
@@ -44,7 +52,8 @@ export class GitHubService {
    */
   async getRateLimit(): Promise<RateLimitInfo> {
     try {
-      const response = await this.octokit.rest.rateLimit.get();
+      const octokit = this.getOctokit();
+      const response = await octokit.rest.rateLimit.get();
       const core = response.data.resources.core;
       return {
         limit: core.limit,
@@ -52,7 +61,8 @@ export class GitHubService {
         used: core.used,
         resetAt: new Date(core.reset * 1000).toISOString()
       };
-    } catch {
+    } catch (err: any) {
+      console.warn('[RepoPulse RateLimit Check Warning]:', err?.message);
       return {
         limit: 60,
         remaining: 60,
@@ -66,24 +76,30 @@ export class GitHubService {
    * Fetches and analyzes a full developer profile and repositories.
    */
   async getDeveloperAnalytics(username: string): Promise<NormalizedDeveloperResponse> {
-    const cacheKey = `developer:${username.toLowerCase()}`;
+    const cleanUsername = username.trim().replace(/^@/, '');
+    const cacheKey = `developer:${cleanUsername.toLowerCase()}`;
     const cached = getCached<NormalizedDeveloperResponse>(cacheKey);
     if (cached) {
       return cached;
     }
 
+    const octokit = this.getOctokit();
+
     try {
       // 1. Fetch user profile
-      const userResponse = await this.octokit.rest.users.getByUsername({
-        username
+      const userResponse = await octokit.rest.users.getByUsername({
+        username: cleanUsername
       }).catch((err: any) => {
         if (err.status === 404) {
-          throw new GitHubApiError(`GitHub user "${username}" not found.`, 404);
+          throw new GitHubApiError(`GitHub user "${cleanUsername}" not found.`, 404);
         }
-        if (err.status === 403) {
+        if (err.status === 403 || err.status === 429) {
           const resetHeader = err.response?.headers?.['x-ratelimit-reset'];
           const resetDate = resetHeader ? new Date(parseInt(resetHeader, 10) * 1000).toISOString() : undefined;
-          throw new GitHubApiError('GitHub API rate limit exceeded. Please try again later.', 429, null, resetDate);
+          throw new GitHubApiError('GitHub API rate limit exceeded. Please configure a GITHUB_TOKEN on Vercel.', 429, null, resetDate);
+        }
+        if (err.status === 401) {
+          throw new GitHubApiError('GitHub API authentication failed. Check GITHUB_TOKEN environment variable on Vercel.', 401);
         }
         throw new GitHubApiError(err.message || 'Failed to fetch GitHub profile', err.status || 500);
       });
@@ -91,13 +107,13 @@ export class GitHubService {
       const rawUser = userResponse.data;
 
       // 2. Fetch user repositories (up to 100 most recently updated)
-      const reposResponse = await this.octokit.rest.repos.listForUser({
-        username,
+      const reposResponse = await octokit.rest.repos.listForUser({
+        username: cleanUsername,
         sort: 'updated',
         per_page: 100,
         type: 'all'
       }).catch((err: any) => {
-        if (err.status === 403) {
+        if (err.status === 403 || err.status === 429) {
           throw new GitHubApiError('GitHub API rate limit reached while fetching repositories.', 429);
         }
         throw new GitHubApiError(err.message || 'Failed to fetch repositories', err.status || 500);
@@ -108,8 +124,8 @@ export class GitHubService {
       // 3. Fetch public events/activity for recent timeline
       let rawEvents: any[] = [];
       try {
-        const eventsResponse = await this.octokit.rest.activity.listPublicEventsForUser({
-          username,
+        const eventsResponse = await octokit.rest.activity.listPublicEventsForUser({
+          username: cleanUsername,
           per_page: 30
         });
         rawEvents = eventsResponse.data;
@@ -129,7 +145,7 @@ export class GitHubService {
 
       // Fetch detailed language bytes in parallel for top repos
       const languagePromises = candidateReposForLanguages.map(repo =>
-        this.octokit.rest.repos.listLanguages({
+        octokit.rest.repos.listLanguages({
           owner: repo.owner.login,
           repo: repo.name
         }).then(res => res.data as Record<string, number>).catch(() => ({}))
@@ -314,10 +330,10 @@ export class GitHubService {
       setCached(cacheKey, normalizedResponse);
       return normalizedResponse;
     } catch (error: any) {
-      if (error instanceof GitHubApiError) {
+      if (error instanceof GitHubApiError || error?.name === 'GitHubApiError') {
         throw error;
       }
-      throw new GitHubApiError(error.message || 'Internal server error while fetching GitHub analytics', 500);
+      throw new GitHubApiError(error.message || 'Internal server error while fetching GitHub analytics', error?.status || 500);
     }
   }
 
@@ -325,24 +341,31 @@ export class GitHubService {
    * Fetches detailed analytics for a single repository.
    */
   async getRepositoryDetails(owner: string, repo: string): Promise<RepositoryDetailResponse> {
-    const cacheKey = `repo:${owner.toLowerCase()}/${repo.toLowerCase()}`;
+    const cleanOwner = owner.trim();
+    const cleanRepo = repo.trim();
+    const cacheKey = `repo:${cleanOwner.toLowerCase()}/${cleanRepo.toLowerCase()}`;
     const cached = getCached<RepositoryDetailResponse>(cacheKey);
     if (cached) {
       return cached;
     }
 
+    const octokit = this.getOctokit();
+
     try {
       const [repoResponse, languagesResponse] = await Promise.all([
-        this.octokit.rest.repos.get({ owner, repo }).catch((err: any) => {
+        octokit.rest.repos.get({ owner: cleanOwner, repo: cleanRepo }).catch((err: any) => {
           if (err.status === 404) {
-            throw new GitHubApiError(`Repository "${owner}/${repo}" was not found.`, 404);
+            throw new GitHubApiError(`Repository "${cleanOwner}/${cleanRepo}" was not found.`, 404);
           }
-          if (err.status === 403) {
+          if (err.status === 403 || err.status === 429) {
             throw new GitHubApiError('GitHub API rate limit exceeded.', 429);
+          }
+          if (err.status === 401) {
+            throw new GitHubApiError('GitHub API authentication failed. Check GITHUB_TOKEN.', 401);
           }
           throw new GitHubApiError(err.message || 'Failed to fetch repository', err.status || 500);
         }),
-        this.octokit.rest.repos.listLanguages({ owner, repo }).catch(() => ({ data: {} }))
+        octokit.rest.repos.listLanguages({ owner: cleanOwner, repo: cleanRepo }).catch(() => ({ data: {} }))
       ]);
 
       const r = repoResponse.data;
@@ -421,10 +444,10 @@ export class GitHubService {
       setCached(cacheKey, detailResponse);
       return detailResponse;
     } catch (error: any) {
-      if (error instanceof GitHubApiError) {
+      if (error instanceof GitHubApiError || error?.name === 'GitHubApiError') {
         throw error;
       }
-      throw new GitHubApiError(error.message || 'Internal server error while fetching repository details', 500);
+      throw new GitHubApiError(error.message || 'Internal server error while fetching repository details', error?.status || 500);
     }
   }
 }
