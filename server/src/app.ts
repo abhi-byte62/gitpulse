@@ -14,12 +14,17 @@ export function createApp(): Express {
   // Trust proxy for Vercel and reverse-proxy environments
   app.set('trust proxy', 1);
 
-  // Security headers
-  app.use(
-    helmet({
-      crossOriginResourcePolicy: { policy: 'cross-origin' },
-    })
-  );
+  // Disable X-Powered-By header safely
+  app.disable('x-powered-by');
+
+  // Standard safe security headers (compatible with Vercel serverless response)
+  app.use((_req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('X-Frame-Options', 'DENY');
+    res.setHeader('X-XSS-Protection', '1; mode=block');
+    res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+    next();
+  });
 
   // CORS configuration
   app.use(

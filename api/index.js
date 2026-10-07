@@ -1,7 +1,6 @@
 // server/src/app.ts
 import express from "express";
 import cors from "cors";
-import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import dotenv from "dotenv";
 
@@ -792,11 +791,14 @@ dotenv.config();
 function createApp() {
   const app2 = express();
   app2.set("trust proxy", 1);
-  app2.use(
-    helmet({
-      crossOriginResourcePolicy: { policy: "cross-origin" }
-    })
-  );
+  app2.disable("x-powered-by");
+  app2.use((_req, res, next) => {
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    res.setHeader("X-Frame-Options", "DENY");
+    res.setHeader("X-XSS-Protection", "1; mode=block");
+    res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+    next();
+  });
   app2.use(
     cors({
       origin: true,
